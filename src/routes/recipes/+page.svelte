@@ -25,12 +25,17 @@
     <div class="recepie-details">
         <button on:click={goBack} class="back-btn">Back</button>
         <h2>{selectedRecipe.name}</h2>
-        <p><strong>Ingredients</strong>{selectedRecipe.ingredients}</p>
+        <div class="recepie-description">
+            <p><strong>Ingredients</strong>{selectedRecipe.ingredients}</p>
         <p><strong>Instructions:</strong> {selectedRecipe.instructions}</p>
+        </div>
+        
     </div>
 {:else}
 <div class="menu-container">
     {#each recipes as recipes}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div class="menu-item" on:click={() => selectRecipe(recipes)}>
             <h2>{recipes.name}</h2>
             <p>
@@ -76,11 +81,11 @@
         color: #d35400;
     }
 
-.menu-item p{
-    color: #555;
-}
+    .menu-item p{
+        color: #555;
+    }
 
-.recipe-details {
+    .recepie-details {
         background: #fff;
         padding: 2rem;
         border-radius: 12px;
@@ -88,9 +93,19 @@
         text-align: left;
         max-width: 600px;
         margin: auto;
+
     }
 
-    .recipe-details h2 {
+    .recepie-description{
+        background: #f8f9fa;
+        border-radius:12px;
+        padding: 1.5rem;
+        box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition:transform 0.3s ease-in-out;
+    }
+
+    .recepie-details h2 {
         color: #d35400;
         margin-bottom: 1rem;
     }
