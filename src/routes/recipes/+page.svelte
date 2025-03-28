@@ -1,34 +1,39 @@
 <script lang="ts">
-    import {onMount} from "svelte";
+    import { onMount } from "svelte";
     import Sortable from "sortablejs";
 
     export let data; 
-    console.log(data); 
-    const { recipes } = data;
+    console.log(data);
 
-    let recipeList;
+    const storedRecipes = localStorage.getItem("recipes");
+    const recipes = storedRecipes ? JSON.parse(storedRecipes) : data.recipes;
 
-    onMount(() => {
+    
 
+onMount(() => {
+    const recipeList = document.getElementById("recipe-list");
+    if(recipeList){
         new Sortable(recipeList, {
-            animation: 150,
-            ghostClass: "dragging",
-            onEnd: (evt) =>{
-                const {oldIndex, newIndex} = evt;
-                if (oldIndex !== newIndex){
-                    const movedItem = recipes.splice(oldIndex, 1)[0];
-                    recipes.splice(newIndex, 0, movedItem);
+                animation: 150,
+                ghostClass: "dragging",
+                onEnd: (evt) => {
+                    const { oldIndex, newIndex } = evt;
+                    if (oldIndex !== newIndex) {
+                        const movedItem = recipes.splice(oldIndex, 1)[0];
+                        recipes.splice(newIndex, 0, movedItem);
+                        localStorage.setItem("recipes", JSON.stringify(recipes));
+                    }
                 }
-            }
-        })
-    });
+            });
+    }
 
+        
+});
 </script>
 
-<h1>Menu</h1>
+<h1>Drag & Drop Recipes</h1>
 
-
-<ul bind:this={recipeList} class="menu-container">
+<ul id="recipe-list" class="menu-container">
     {#each recipes as recipe}
         <li class="menu-item">
             <a href={`/recipes/${recipe.name.toLowerCase().replace(/\s+/g, '-')}`}>
@@ -40,9 +45,9 @@
 </ul>
 
 <style>
-    h1{
-        text-align:center;
-        color:#333;
+    h1 {
+        text-align: center;
+        color: #333;
         margin-bottom: 1.5rem;
     }
 
@@ -53,7 +58,7 @@
         margin: auto;
     }
 
-    .menu-item{
+    .menu-item {
         background: #f8f9fa;
         border-radius: 12px;
         padding: 1.5rem;
@@ -63,8 +68,12 @@
         transition: transform 0.3s ease-in-out;
     }
 
+    .menu-item:hover {
+        transform: scale(1.05);
+    }
+
     .menu-item a {
-        text-decoration: none; /* Uklanja podvučene linkove */
+        text-decoration: none; 
         color: inherit;
         display: block;
     }
@@ -81,6 +90,4 @@
     .dragging {
         opacity: 0.5;
     }
-
-    
 </style>
