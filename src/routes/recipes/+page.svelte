@@ -1,37 +1,39 @@
-<script lang="ts">
-    import { onMount } from "svelte";
-    import Sortable from "sortablejs";
+<script>
+    import { onMount } from 'svelte';
+    import Sortable from 'sortablejs';
 
     export let data; 
-    console.log(data);
 
-    const storedRecipes = localStorage.getItem("recipes");
-    const recipes = storedRecipes ? JSON.parse(storedRecipes) : data.recipes;
+    // Postavi recipes na prazan niz ili početne vrednosti
+    let recipes = data?.recipes || [];
 
-    
+    onMount(() => {
+        if (typeof window !== 'undefined') {
+            const storedRecipes = localStorage.getItem("recipes");
+            recipes = storedRecipes
+                ? JSON.parse(storedRecipes)
+                : (data?.recipes || [{ name: 'Sample Recipe', ingredients: 'Sample Ingredients' }]);
 
-onMount(() => {
-    const recipeList = document.getElementById("recipe-list");
-    if(recipeList){
-        new Sortable(recipeList, {
-                animation: 150,
-                ghostClass: "dragging",
-                onEnd: (evt) => {
-                    const { oldIndex, newIndex } = evt;
-                    if (oldIndex !== newIndex) {
-                        const movedItem = recipes.splice(oldIndex, 1)[0];
-                        recipes.splice(newIndex, 0, movedItem);
-                        localStorage.setItem("recipes", JSON.stringify(recipes));
+            const recipeList = document.getElementById("recipe-list");
+            if (recipeList) {
+                new Sortable(recipeList, {
+                    animation: 150,
+                    ghostClass: "dragging",
+                    onEnd: (evt) => {
+                        const { oldIndex, newIndex } = evt;
+                        if (oldIndex !== newIndex) {
+                            const movedItem = recipes.splice(oldIndex, 1)[0];
+                            recipes.splice(newIndex, 0, movedItem);
+                            localStorage.setItem("recipes", JSON.stringify(recipes));
+                        }
                     }
-                }
-            });
-    }
-
-        
-});
+                });
+            }
+        }
+    });
 </script>
 
-<h1>Drag & Drop Recipes</h1>
+<h1> Recipes</h1>
 
 <ul id="recipe-list" class="menu-container">
     {#each recipes as recipe}
