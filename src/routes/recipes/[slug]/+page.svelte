@@ -1,13 +1,12 @@
 <script lang="ts">
-    export let data;
-    const { recipe } = data;
+    export let data: { recipe: { name: string, ingredients: string, instructions: string } };
 </script>
 
-<h1>{recipe.name}</h1>
+<h1>{data.recipe.name}</h1>
 
 <div class="recipe-details">
-    <p><strong>Ingredients:</strong> {recipe.ingredients}</p>
-    <p><strong>Instructions:</strong> {recipe.instructions}</p>
+    <p><strong>Ingredients:</strong> {data.recipe.ingredients}</p>
+    <p><strong>Instructions:</strong> {data.recipe.instructions}</p>
 </div>
 
 <a href="/recipes" class="back-btn">Back</a>

@@ -1,42 +1,70 @@
-<script>
-    import { onMount } from 'svelte';
+<script lang="ts">
+     import { onMount, onDestroy } from 'svelte';
     import Sortable from 'sortablejs';
+    import { writable, get } from 'svelte/store';
 
-    export let data; 
+    interface Recipe {
+        name: string;
+        ingredients: string;
+    }
 
-    // Postavi recipes na prazan niz ili početne vrednosti
-    let recipes = data?.recipes || [];
+    export let data: { recipes: Recipe[] } = { recipes: [] };
 
-    onMount(() => {
+    const recipes = writable<Recipe[]>([]);
+
+    const loadRecipes = () => {
         if (typeof window !== 'undefined') {
             const storedRecipes = localStorage.getItem("recipes");
-            recipes = storedRecipes
-                ? JSON.parse(storedRecipes)
-                : (data?.recipes || [{ name: 'Sample Recipe', ingredients: 'Sample Ingredients' }]);
-
-            const recipeList = document.getElementById("recipe-list");
-            if (recipeList) {
-                new Sortable(recipeList, {
-                    animation: 150,
-                    ghostClass: "dragging",
-                    onEnd: (evt) => {
-                        const { oldIndex, newIndex } = evt;
-                        if (oldIndex !== newIndex) {
-                            const movedItem = recipes.splice(oldIndex, 1)[0];
-                            recipes.splice(newIndex, 0, movedItem);
-                            localStorage.setItem("recipes", JSON.stringify(recipes));
-                        }
-                    }
-                });
+            if (storedRecipes) {
+                recipes.set(JSON.parse(storedRecipes));
+            } else {
+                recipes.set(data.recipes);
+                localStorage.setItem("recipes", JSON.stringify(data.recipes));
             }
         }
+    };
+
+    onMount(() => {
+        loadRecipes();
+
+        // Subscribujemo se na store i čuvamo u localStorage
+        const unsubscribe = recipes.subscribe((value) => {
+            if (typeof window !== 'undefined') {
+                localStorage.setItem("recipes", JSON.stringify(value));
+            }
+        });
+
+        // Omogućavamo drag & drop pomoću Sortable.js
+        const recipeList = document.getElementById('recipe-list');
+        if (recipeList) {
+            new Sortable(recipeList, {
+                animation: 150,
+                onEnd(evt) {
+                    let updatedRecipes = get(recipes); // Dobijamo trenutne recepte iz store-a
+                    const oldIndex = evt.oldIndex;
+                    const newIndex = evt.newIndex;
+
+                    if (typeof oldIndex === 'number' && typeof newIndex === 'number') {
+                        // Samo ako su oldIndex i newIndex validni brojevi, izvrši operaciju
+                        const movedItem = updatedRecipes.splice(oldIndex, 1)[0];
+                        updatedRecipes.splice(newIndex, 0, movedItem);
+
+                        recipes.set(updatedRecipes); // Ažuriramo store i automatski localStorage
+                    }
+                }
+            });
+        }
+
+        return () => {
+            unsubscribe(); // Otkazujemo subskripciju pri uništavanju komponente
+        };
     });
 </script>
 
-<h1> Recipes</h1>
+<h1>Recipes</h1>
 
 <ul id="recipe-list" class="menu-container">
-    {#each recipes as recipe}
+    {#each $recipes as recipe, index}
         <li class="menu-item">
             <a href={`/recipes/${recipe.name.toLowerCase().replace(/\s+/g, '-')}`}>
                 <h2>{recipe.name}</h2>
